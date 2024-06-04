@@ -14,48 +14,41 @@
     <h1>Receitas</h1>
     <form action="{{ url_for('gerarReceita') }}" method="POST">
         <div class="campo">
-            <label for="ingredientes">Ingredientes:</label>
-            <input type="text" id="ingredientes" name="ingredientes" placeholder="Digite os ingredientes que você possui">
-        </div>
-
-        <div class="campo">
             <label for="categoria">Categoria:</label>
             <select id="categoria" name="categoria">
-                <option value="">Selecione a categoria</option>
-                <option value="doces">Doces</option>
-                <option value="salgados">Salgados</option>
-                <option value="veganas">Veganas</option>
+                <option value="qualquer">Qualquer</option>
+                <option value="carne">Carnes</option>
+                <option value="massa">Massas</option>
+                <option value="sopa/creme">Sopas e Cremes</option>
+                <option value="salada">Saladas</option>
+                <option value="legume/vegetal">Legumes e Vegetais</option>
+                <option value="salgado">Salgado</option>
+                <option value="doce">Doce</option>
+                <option value="sobremesa">Sobremesas</option>
+                <option value="bebida">Bebidas</option>
+                <option value="outro">Outro</option>
             </select>
+            <input type="text" id="categoriaOutro" name="categoriaOutro" placeholder="Adicione outra categoria(opcional)">
         </div>
-
         <div class="campo">
             <label for="dificuldade">Nível de Dificuldade:</label>
             <div class="radio-buttons">
                 <input type="radio" id="facil" name="dificuldade" value="facil">
                 <label for="facil">Fácil</label>
-
-                <input type="radio" id="medio" name="dificuldade" value="medio">
+                <input type="radio" id="medio" name="dificuldade" value="medio" checked>
                 <label for="medio">Médio</label>
-
                 <input type="radio" id="dificil" name="dificuldade" value="dificil">
                 <label for="dificil">Difícil</label>
             </div>
         </div>
-
         <div class="campo">
             <label for="restricoes">Restrições Alimentares:</label>
-            <div class="checkboxes">
-                <input type="checkbox" id="vegetariano" name="restricoes" value="vegetariano">
-                <label for="vegetariano">Vegetariano</label>
-
-                <input type="checkbox" id="vegano" name="restricoes" value="vegano">
-                <label for="vegano">Vegano</label>
-
-                <input type="checkbox" id="semgluten" name="restricoes" value="semgluten">
-                <label for="semgluten">Sem Glúten</label>
-            </div>
+            <input type="text" id="restricoes" name="restricoes" placeholder="Opcional">
         </div>
-
+        <div class="campo">
+            <label for="observacoes">Observações:</label>
+            <input type="text" id="observacoes" name="observacoes" placeholder="Opcional">
+        </div>
         <button type="submit">Gerar Receita</button>
     </form>
 </body>

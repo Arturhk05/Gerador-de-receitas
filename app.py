@@ -24,6 +24,28 @@ class ChatGPT(ABC):
     def __init__(self):
         self.conexao = OpenAI(api_key = self.chave)
 
+class Receita(ChatGPT):
+    def __init__(self, nome, criador, categoria, dificuldade, observacoes, restricoes):
+        super().__init__()
+        self.nome = nome
+        self.receita = ""
+        self.criador = criador
+        self.categoria = categoria
+        self.dificuldade = dificuldade
+        self.observacoes = observacoes
+        self.restricoes = restricoes
+
+    def gerarReceita(self):
+        receita = self.conexao.chat.completions.create(
+            model = self.modelo_inteligencia,
+            response_format = self.formato_resposta,
+            messages = [
+                {"role": "system", "content": "Atue como um chefe de cozinha"},
+                {"role": "user", "content": "Gere uma receita que possua as seguintes caracteristicas, caso houver: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricoes: " + self.restricoes}
+            ]
+        )
+        return receita.choices[0].message.content
+
 class Usuario(db.Model):
     __tablename__="usuarios"
 
@@ -71,6 +93,9 @@ def index():
 
 @app.route("/receitas")
 def receitas():
+    if 'username' not in session:
+        return 'Acesso não autorizado! É preciso Logar'
+
     return render_template('receitas.html')
 
 @app.route("/ingredientes")
@@ -85,7 +110,24 @@ def ingredientes():
 
 @app.route("/gerarReceita", methods=['POST', 'GET'])
 def gerarReceita():
-    return render_template('receitas.html')
+    if request.method == 'POST':
+        categoria = request.form['categoria']
+        if categoria == 'outro':
+            categoria = request.form['categoriaOutro']
+
+        dificuldade = request.form['dificuldade']
+        observacoes = request.form['observacoes']
+        restricoes = request.form['restricoes']
+
+        nome = format(session['username'])
+
+        info = Receita("nada", nome, categoria, dificuldade, observacoes, restricoes)
+
+        print(categoria, dificuldade, observacoes, restricoes)
+        print(info.gerarReceita())
+
+        return redirect(url_for('receitas'))
+    return redirect(url_for('receitas'))
 
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
