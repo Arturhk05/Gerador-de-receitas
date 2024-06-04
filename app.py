@@ -29,7 +29,6 @@ class Ingrediente(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String, unique=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
 
     def __init__(self, nome):
         self.nome = nome
@@ -59,7 +58,6 @@ class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String, unique=True)
     senha = db.Column(db.String)
-    ingredientes = db.relationship('Ingrediente', backref='usuarios')
 
     def __init__(self, nome, senha):
         self.nome = nome
@@ -68,13 +66,6 @@ class Usuario(db.Model):
     def buscaPorNome(nome):
         user = db.session.query(Usuario).filter_by(nome=nome).first()
         return user
-
-    def buscaIngredientes(nome):
-        user = Usuario.buscaPorNome(nome)
-        id = user.id
-
-        ingredientes = db.session.query(Ingrediente).filter_by(id=usuario_id)
-        return ingredientes
 
     def cadastrar(nome, senha):
         if nome.replace(" ", "") == "" or senha.replace(" ", "") == "":
@@ -114,12 +105,11 @@ def receitas():
 def ingredientes():
     if 'username' not in session:
         return 'Acesso não autorizado! É preciso Logar'
-
+    
     nome = format(session['username'])
+    user = Usuario.buscaPorNome(nome)
 
-
-
-    return render_template('ingredientes.html', nome=nome, ingredientes=ingredientes)
+    return render_template('ingredientes.html', user=user)
 
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
