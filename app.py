@@ -80,6 +80,14 @@ def index():
     users = Usuario.query.all()
     return render_template('index.html', users=users)
 
+@app.route("/receitas")
+def receitas():
+    return render_template('receitas.html')
+
+@app.route("/ingredientes")
+def ingredientes():
+    return render_template('ingredientes.html')
+
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
     if request.method == 'POST':
