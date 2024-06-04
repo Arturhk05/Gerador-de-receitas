@@ -6,6 +6,19 @@
     <title>Home</title>
 </head>
 <body>
-    <h1>Olá mundo</h1>
+    <h1>Cadastro</h1>
+    <form action="{{ url_for('cadastro') }}" method="POST">
+        Qual seu nome?
+        <input type="text" name="nome">
+        <br>
+        Qual sua senha?
+        <input type="text" name="senha">
+        <br>
+        <input type="submit">
+    </form>
+    {% for user in users %}
+    ID: {{ user.id }}, Nome: {{ user.nome }}, Senha: {{ user.senha }}
+    <hr>
+    {% endfor %}
 </body>
 </html>
