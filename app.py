@@ -34,6 +34,25 @@ class Ingrediente(db.Model):
     def __init__(self, nome):
         self.nome = nome
 
+    def buscaPorNome(nome):
+        ingrediente = db.session.query(Ingrediente).filter_by(nome=nome).first()
+        return ingrediente
+
+    def criar(nome):
+        if nome.replace(" ", "") == "":
+            return "Nome invalido!"
+        
+        verifica = Ingrediente.buscaPorNome(nome)
+
+        if verifica:
+            if verifica.nome == nome:
+                return "Este ingrediente já existe!"
+            
+        ingrediente = Ingrediente(nome)
+        db.session.add(ingrediente)
+        db.session.commit()
+        return "Igrediente criado!"
+
 class Usuario(db.Model):
     __tablename__="usuarios"
 
@@ -46,15 +65,22 @@ class Usuario(db.Model):
         self.nome = nome
         self.senha = senha
 
-    def buscaUsuario(nome):
+    def buscaPorNome(nome):
         user = db.session.query(Usuario).filter_by(nome=nome).first()
         return user
 
+    def buscaIngredientes(nome):
+        user = Usuario.buscaPorNome(nome)
+        id = user.id
+
+        ingredientes = db.session.query(Ingrediente).filter_by(id=usuario_id)
+        return ingredientes
+
     def cadastrar(nome, senha):
-        if nome == '' or senha == '' or nome == ' ' or senha == ' ':
+        if nome.replace(" ", "") == "" or senha.replace(" ", "") == "":
             return "Nome ou senha invalidos!"
-        
-        verifica = Usuario.buscaUsuario(nome)
+
+        verifica = Usuario.buscaPorNome(nome)
 
         if verifica:
             if verifica.nome == nome:
@@ -66,7 +92,7 @@ class Usuario(db.Model):
         return "Usuário criado!"
     
     def logar(nome, senha):
-        user = Usuario.buscaUsuario(nome)
+        user = Usuario.buscaPorNome(nome)
         if user == None:
             return "Usuario não encontrado!"
         if user.senha != senha:
@@ -86,7 +112,14 @@ def receitas():
 
 @app.route("/ingredientes")
 def ingredientes():
-    return render_template('ingredientes.html')
+    if 'username' not in session:
+        return 'Acesso não autorizado! É preciso Logar'
+
+    nome = format(session['username'])
+
+
+
+    return render_template('ingredientes.html', nome=nome, ingredientes=ingredientes)
 
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
