@@ -12,5 +12,51 @@
 </nav>
 <body>
     <h1>Receitas</h1>
+    <form action="{{ url_for('gerarReceita') }}" method="POST">
+        <div class="campo">
+            <label for="ingredientes">Ingredientes:</label>
+            <input type="text" id="ingredientes" name="ingredientes" placeholder="Digite os ingredientes que você possui">
+        </div>
+
+        <div class="campo">
+            <label for="categoria">Categoria:</label>
+            <select id="categoria" name="categoria">
+                <option value="">Selecione a categoria</option>
+                <option value="doces">Doces</option>
+                <option value="salgados">Salgados</option>
+                <option value="veganas">Veganas</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label for="dificuldade">Nível de Dificuldade:</label>
+            <div class="radio-buttons">
+                <input type="radio" id="facil" name="dificuldade" value="facil">
+                <label for="facil">Fácil</label>
+
+                <input type="radio" id="medio" name="dificuldade" value="medio">
+                <label for="medio">Médio</label>
+
+                <input type="radio" id="dificil" name="dificuldade" value="dificil">
+                <label for="dificil">Difícil</label>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="restricoes">Restrições Alimentares:</label>
+            <div class="checkboxes">
+                <input type="checkbox" id="vegetariano" name="restricoes" value="vegetariano">
+                <label for="vegetariano">Vegetariano</label>
+
+                <input type="checkbox" id="vegano" name="restricoes" value="vegano">
+                <label for="vegano">Vegano</label>
+
+                <input type="checkbox" id="semgluten" name="restricoes" value="semgluten">
+                <label for="semgluten">Sem Glúten</label>
+            </div>
+        </div>
+
+        <button type="submit">Gerar Receita</button>
+    </form>
 </body>
 </html>

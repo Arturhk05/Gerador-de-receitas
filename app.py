@@ -24,34 +24,6 @@ class ChatGPT(ABC):
     def __init__(self):
         self.conexao = OpenAI(api_key = self.chave)
 
-class Ingrediente(db.Model):
-    __tablename__="ingredientes"
-
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String, unique=True)
-
-    def __init__(self, nome):
-        self.nome = nome
-
-    def buscaPorNome(nome):
-        ingrediente = db.session.query(Ingrediente).filter_by(nome=nome).first()
-        return ingrediente
-
-    def criar(nome):
-        if nome.replace(" ", "") == "":
-            return "Nome invalido!"
-        
-        verifica = Ingrediente.buscaPorNome(nome)
-
-        if verifica:
-            if verifica.nome == nome:
-                return "Este ingrediente já existe!"
-            
-        ingrediente = Ingrediente(nome)
-        db.session.add(ingrediente)
-        db.session.commit()
-        return "Igrediente criado!"
-
 class Usuario(db.Model):
     __tablename__="usuarios"
 
@@ -110,6 +82,10 @@ def ingredientes():
     user = Usuario.buscaPorNome(nome)
 
     return render_template('ingredientes.html', user=user)
+
+@app.route("/gerarReceita", methods=['POST', 'GET'])
+def gerarReceita():
+    return render_template('receitas.html')
 
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
