@@ -46,10 +46,38 @@ class Usuario(db.Model):
         self.nome = nome
         self.senha = senha
 
+    def buscaUsuario(nome):
+        user = db.session.query(Usuario).filter_by(nome=nome).first()
+        return user
+
+    def cadastrar(nome, senha):
+        if nome == '' or senha == '' or nome == ' ' or senha == ' ':
+            return "Nome ou senha invalidos!"
+        
+        verifica = Usuario.buscaUsuario(nome)
+
+        if verifica:
+            if verifica.nome == nome:
+                return "Este usuário já existe!"
+
+        user = Usuario(nome, senha)
+        db.session.add(user)
+        db.session.commit()
+        return "Usuário criado!"
+    
+    def logar(nome, senha):
+        user = Usuario.buscaUsuario(nome)
+        if user == None:
+            return "Usuario não encontrado!"
+        if user.senha != senha:
+            return "Senha incorreta!"
+        if user.senha == senha:
+            session['username'] = user.nome
+            return "Logado!"
+
 @app.route("/")
 def index():
     users = Usuario.query.all()
-
     return render_template('index.html', users=users)
 
 @app.route("/cadastro", methods=['POST', 'GET'])
@@ -58,14 +86,17 @@ def cadastro():
         nome = request.form['nome']
         senha = request.form['senha']
 
-        if nome == '' or senha == '' or nome == ' ' or senha == ' ':
-            return "Nome ou senha invalidos!"
+        return Usuario.cadastrar(nome, senha)
+    return render_template('index.html')
 
-        user = Usuario(nome, senha)
-        db.session.add(user)
-        db.session.commit()
-        return "Usuário criado"
-    return render_template('usuario.html')
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        nome = request.form['nome']
+        senha = request.form['senha']
+
+        return Usuario.logar(nome, senha)
+    return render_template('login.html')
 
 if __name__ == "__main__":
     db.create_all()
