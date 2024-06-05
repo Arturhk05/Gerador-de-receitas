@@ -24,7 +24,21 @@ class ChatGPT(ABC):
     def __init__(self):
         self.conexao = OpenAI(api_key = self.chave)
 
+class ReceitaDB(db.Model):
+    __tablename__="receitas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    html = db.Column(db.Text)
+    criador = db.Column(db.String, primary_key=True)
+
+    def __init__(self, html, nome, criador):
+        self.html = html
+        self.nome = nome
+        self.criador = criador
+
 class Receita(ChatGPT):
+    __tablename__="receitas"
+
     def __init__(self, nome, criador, categoria, dificuldade, observacoes, restricoes):
         super().__init__()
         self.nome = nome
@@ -40,8 +54,8 @@ class Receita(ChatGPT):
             model = self.modelo_inteligencia,
             response_format = self.formato_resposta,
             messages = [
-                {"role": "system", "content": "Atue como um chefe de cozinha"},
-                {"role": "user", "content": "Gere uma receita que possua as seguintes caracteristicas, caso houver: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricoes: " + self.restricoes}
+                {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
+                {"role": "user", "content": "Gere uma receita que possua as seguintes informacoes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricoes: " + self.restricoes + "Igredientes e modo de preparo."}
             ]
         )
         return receita.choices[0].message.content
@@ -94,7 +108,7 @@ def index():
 @app.route("/receitas")
 def receitas():
     if 'username' not in session:
-        return 'Acesso não autorizado! É preciso Logar'
+        return 'Acesso não autorizado! É preciso logar para gerar uma receita!'
 
     return render_template('receitas.html')
 
@@ -124,10 +138,18 @@ def gerarReceita():
         info = Receita("nada", nome, categoria, dificuldade, observacoes, restricoes)
 
         print(categoria, dificuldade, observacoes, restricoes)
-        print(info.gerarReceita())
+        res = info.gerarReceita()
 
-        return redirect(url_for('receitas'))
+        return render_template('receitas.html', res=res)
     return redirect(url_for('receitas'))
+
+@app.route('/salvarReceita', methods=['GET', 'POST'])
+def salvarReceita():
+    if request.method == 'POST':
+        res = request.form['res']
+        print(res)
+        return redirect(url_for('receitas'))
+    return render_template('index.html')
 
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
@@ -145,7 +167,7 @@ def login():
         senha = request.form['senha']
 
         return Usuario.logar(nome, senha)
-    return render_template('login.html')
+    return render_template('index.html')
 
 if __name__ == "__main__":
     db.create_all()
