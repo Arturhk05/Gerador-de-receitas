@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingredientes</title>
+</head>
+<nav style="display: inline;">
+    <a href="/">Usuário</a>
+    <a href="/receita">Receitas</a>
+    <a href="/receitasSalvas">Receitas salvas</a>
+    <a href="/deslogar">Deslogar</a>
+</nav>
+<body>
+    <h1>Receitas salvas</h1>
+    {% for receita in receitas %}
+        <h1>{{ receita.id }}</h1>
+        <h4>Criador: {{ receita.criador }}</h4>
+        {{ receita.receita | safe }}
+        <a href="/deletarReceita/{{ receita.id }}">Deletar</a>
+        <a href="/receita/{{ receita.id }}">Editar</a>
+        <hr>
+    {% endfor %}
+</body>
+</html>

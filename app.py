@@ -24,30 +24,37 @@ class ChatGPT(ABC):
     def __init__(self):
         self.conexao = OpenAI(api_key = self.chave)
 
-class ReceitaDB(db.Model):
-    __tablename__="receitas"
-
-    id = db.Column(db.Integer, primary_key=True)
-    html = db.Column(db.Text)
-    criador = db.Column(db.String, primary_key=True)
-
-    def __init__(self, html, nome, criador):
-        self.html = html
-        self.nome = nome
-        self.criador = criador
-
 class Receita(ChatGPT):
-    __tablename__="receitas"
-
-    def __init__(self, nome, criador, categoria, dificuldade, observacoes, restricoes):
+    def __init__(self, criador, categoria, dificuldade, observacoes, restricoes):
         super().__init__()
-        self.nome = nome
-        self.receita = ""
         self.criador = criador
         self.categoria = categoria
         self.dificuldade = dificuldade
         self.observacoes = observacoes
         self.restricoes = restricoes
+        self.receita = ""
+
+    def editar(self, id):
+        receitaAntiga = ReceitaDB.buscaPorId(id)
+
+        receitaAntiga.categoria = self.categoria
+        receitaAntiga.dificuldade = self.dificuldade
+        receitaAntiga.observacoes = self.observacoes
+        receitaAntiga.restricoes = self.restricoes
+        receitaAntiga.receita = self.receita
+
+        db.session.commit()
+
+    def deletar(id):
+        receita = ReceitaDB.buscaPorId(id)
+        db.session.delete(receita)
+        db.session.commit()
+
+    def salvar(self):
+        receita = ReceitaDB(self.criador, self.categoria, self.dificuldade, self.observacoes, self.restricoes, self.receita)
+        db.session.add(receita)
+        db.session.commit()
+        return "Receita salva"
 
     def gerarReceita(self):
         receita = self.conexao.chat.completions.create(
@@ -55,10 +62,44 @@ class Receita(ChatGPT):
             response_format = self.formato_resposta,
             messages = [
                 {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
-                {"role": "user", "content": "Gere uma receita que possua as seguintes informacoes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricoes: " + self.restricoes + "Igredientes e modo de preparo."}
+                {"role": "user", "content": "Gere uma receita que possua as seguintes especificacoes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricoes: " + self.restricoes + "De uma lista APENAS com os ingredientes necessários e o modo de preparaçao."}
             ]
         )
         return receita.choices[0].message.content
+
+    def editarReceita(self):
+        receita = self.conexao.chat.completions.create(
+            model = self.modelo_inteligencia,
+            response_format = self.formato_resposta,
+            messages = [
+                {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
+                {"role": "user", "content": "Com base na seguinte receita (" + self.receita + ") refaça ela caso as especificaoes estejam diferentes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricoes: " + self.restricoes + "De uma lista APENAS com os ingredientes necessários e o modo de preparaçao"}
+            ]
+        )
+        return receita.choices[0].message.content
+
+class ReceitaDB(db.Model):
+    __tablename__="receitas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    receita = db.Column(db.Text)
+    criador = db.Column(db.String)
+    categoria = db.Column(db.String)
+    dificuldade = db.Column(db.String)
+    observacoes = db.Column(db.String)
+    restricoes = db.Column(db.String)
+
+    def __init__(self, criador, categoria, dificuldade, observacoes, restricoes, receita):
+        self.criador = criador
+        self.categoria = categoria
+        self.dificuldade = dificuldade
+        self.observacoes = observacoes
+        self.restricoes = restricoes
+        self.receita = receita
+
+    def buscaPorId(id):
+        receita = db.session.query(ReceitaDB).filter_by(id=id).first()
+        return receita
 
 class Usuario(db.Model):
     __tablename__="usuarios"
@@ -105,22 +146,30 @@ def index():
     users = Usuario.query.all()
     return render_template('index.html', users=users)
 
-@app.route("/receitas")
-def receitas():
+@app.route("/receita")
+def receita():
     if 'username' not in session:
         return 'Acesso não autorizado! É preciso logar para gerar uma receita!'
 
-    return render_template('receitas.html')
+    receita = None
 
-@app.route("/ingredientes")
-def ingredientes():
+    return render_template('receita.html', receita=receita)
+
+@app.route("/receita/<id>")
+def editar(id):
     if 'username' not in session:
-        return 'Acesso não autorizado! É preciso Logar'
-    
-    nome = format(session['username'])
-    user = Usuario.buscaPorNome(nome)
+        return 'Acesso não autorizado! É preciso logar para editar uma receita!'
 
-    return render_template('ingredientes.html', user=user)
+    receita = ReceitaDB.buscaPorId(id)
+
+    return render_template('receita.html', receita= receita)
+
+@app.route("/receitasSalvas")
+def receitasSalvas():
+    receitas = ReceitaDB.query.all()
+    receitas.reverse()
+
+    return render_template('receitasSalvas.html', receitas=receitas)
 
 @app.route("/gerarReceita", methods=['POST', 'GET'])
 def gerarReceita():
@@ -128,28 +177,50 @@ def gerarReceita():
         categoria = request.form['categoria']
         if categoria == 'outro':
             categoria = request.form['categoriaOutro']
-
         dificuldade = request.form['dificuldade']
         observacoes = request.form['observacoes']
         restricoes = request.form['restricoes']
 
         nome = format(session['username'])
 
-        info = Receita("nada", nome, categoria, dificuldade, observacoes, restricoes)
+        receita = Receita(nome, categoria, dificuldade, observacoes, restricoes)
+        receita.receita = receita.gerarReceita()
 
-        print(categoria, dificuldade, observacoes, restricoes)
-        res = info.gerarReceita()
+        print(nome, categoria, dificuldade, observacoes, restricoes)
+        print(receita.receita)
 
-        return render_template('receitas.html', res=res)
+        receita.salvar()
+
+        return redirect(url_for('receitasSalvas'))
     return redirect(url_for('receitas'))
 
-@app.route('/salvarReceita', methods=['GET', 'POST'])
-def salvarReceita():
+@app.route("/editarReceita", methods=['POST', 'GET'])
+def editarReceita():
     if request.method == 'POST':
-        res = request.form['res']
-        print(res)
-        return redirect(url_for('receitas'))
-    return render_template('index.html')
+        categoria = request.form['categoria']
+        if categoria == 'outro':
+            categoria = request.form['categoriaOutro']
+        dificuldade = request.form['dificuldade']
+        observacoes = request.form['observacoes']
+        restricoes = request.form['restricoes']
+        receita = request.form['receita']
+        id = request.form['id']
+
+        receitaNova = Receita("", categoria, dificuldade, observacoes, restricoes)
+        receitaNova.receita = receita
+        receitaNova.receita = receitaNova.editarReceita()
+        
+        receitaNova.editar(id)
+        return redirect(url_for('receitasSalvas'))
+    return redirect(url_for('receita'))
+
+@app.route('/deletarReceita/<id>', methods=['POST', 'GET'])
+def delete(id):
+    if 'username' not in session:
+        return 'Acesso não autorizado! É preciso logar para deletar uma receita!'
+
+    Receita.deletar(id)
+    return redirect(url_for('receitasSalvas'))
 
 @app.route("/cadastro", methods=['POST', 'GET'])
 def cadastro():
@@ -168,6 +239,14 @@ def login():
 
         return Usuario.logar(nome, senha)
     return render_template('index.html')
+
+@app.route('/deslogar')
+def deslogar():
+    if 'username' not in session:
+        return 'Não está logado!'
+
+    session.pop('username', None)
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
     db.create_all()
