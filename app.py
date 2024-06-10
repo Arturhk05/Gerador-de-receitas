@@ -72,7 +72,7 @@ class Receita(ChatGPT):
             response_format = self.formato_resposta,
             messages = [
                 {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
-                {"role": "user", "content": "Gere uma receita que possua as seguintes especificacoes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários, o modo de preparaçao, categoria, restricoes e obsevacoes."}
+                {"role": "user", "content": "Gere uma receita que possua as seguintes especificacoes listadas: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários e modo de preparaçao no seguinte formato: Nome, categoria, observacoes, restricoes, ingredientes e mode de preparo."}
             ]
         )
         return receita.choices[0].message.content
@@ -83,7 +83,7 @@ class Receita(ChatGPT):
             response_format = self.formato_resposta,
             messages = [
                 {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
-                {"role": "user", "content": "Com base na seguinte receita (" + self.receita + ") refaça ela caso as especificaoes estejam diferentes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários, o modo de preparaçao, categoria, restricoes e obsevacoes."}
+                {"role": "user", "content": "Com base na seguinte receita (" + self.receita + ") refaça ela com base nessas especificaoes listadas: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários e modo de preparaçao no seguinte formato: Nome, categoria, observacoes, restricoes, ingredientes e mode de preparo."}
             ]
         )
         return receita.choices[0].message.content
