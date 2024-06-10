@@ -18,9 +18,9 @@
  - [X] Uma funcionalidade para alterar dados em um base de dados.
  - [X] Uma funcionalidade para excluir dados em um base de dados.
  - [X] Uma página HTML com sessão privada que somente usuários habilitados poderão acessá-la/visualiza-la.
- - [ ] Um padrão de projeto criacional.
- - [ ] Um padrão de projeto estrutural.
- - [ ] Um padrão de projeto comportamental.
+ - [X] Um padrão de projeto criacional.
+ - [X] Um padrão de projeto estrutural.
+ - [X] Um padrão de projeto comportamental.
  - [X] Uma funcionalidade que utilize a API do ChatGPT.
 
 ## Padrões de projeto utilizados
