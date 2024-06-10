@@ -22,3 +22,15 @@
  - [ ] Um padrão de projeto estrutural.
  - [ ] Um padrão de projeto comportamental.
  - [X] Uma funcionalidade que utilize a API do ChatGPT.
+
+## Padrões de projeto utilizados
+
+**Padrões de Projeto Criacionais:**
+ - Builder - Utilizado para a construção da classe receita.
+ - Factory Method - Criar as páginas de erro específicas.
+
+**Padrões de Projeto Estruturais:**
+ - Fachada - Utilizado para unificar as funções de salvar dados.
+
+ **Padrões de Projeto Comportamentais:**
+ - Template Method - Utilizado para servir de base na construção das páginas de erro.
