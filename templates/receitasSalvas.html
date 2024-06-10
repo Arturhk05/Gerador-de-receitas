@@ -6,19 +6,21 @@
     <title>Ingredientes</title>
 </head>
 <nav style="display: inline;">
-    <a href="/">Usuário</a>
-    <a href="/receita">Receitas</a>
-    <a href="/receitasSalvas">Receitas salvas</a>
+    <a href="/">Usuário</a> /
+    <a href="/receita">Receita</a> /
+    <a href="/receitasSalvas">Receitas salvas</a> /
     <a href="/deslogar">Deslogar</a>
 </nav>
 <body>
     <h1>Receitas salvas</h1>
+    <hr>
     {% for receita in receitas %}
-        <h1>{{ receita.id }}</h1>
-        <h4>Criador: {{ receita.criador }}</h4>
+        <br>
+        <h1>{{ receita.id }} - Criador: {{ receita.criador }}</h1>
         {{ receita.receita | safe }}
         <a href="/deletarReceita/{{ receita.id }}">Deletar</a>
         <a href="/receita/{{ receita.id }}">Editar</a>
+        <br>
         <hr>
     {% endfor %}
 </body>

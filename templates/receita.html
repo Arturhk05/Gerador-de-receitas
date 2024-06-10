@@ -6,9 +6,9 @@
     <title>Receitas</title>
 </head>
 <nav style="display: inline;">
-    <a href="/">Usuário</a>
-    <a href="/receita">Receitas</a>
-    <a href="/receitasSalvas">Receitas salvas</a>
+    <a href="/">Usuário</a> /
+    <a href="/receita">Receita</a> /
+    <a href="/receitasSalvas">Receitas salvas</a> /
     <a href="/deslogar">Deslogar</a>
 </nav>
 <body>
@@ -24,7 +24,7 @@
         <div class="campo">
             <label for="categoria">Categoria:</label>
             {% if receita == None %}
-                <select id="categoria" name="categoria">
+                <select id="categoria" name="categoria" required>
                     <option value="Qualquer">Qualquer</option>
                     <option value="Carne">Carnes</option>
                     <option value="Massa">Massas</option>
@@ -42,11 +42,22 @@
         <div class="campo">
             <label for="dificuldade">Nível de Dificuldade:</label>
             <div class="radio-buttons">
-                <input type="radio" id="facil" name="dificuldade" value="facil">
+                <input type="radio" id="facil" name="dificuldade" value="facil" 
+                {% if receita.dificuldade == "facil" %} 
+                    checked 
+                {% endif %}>
                 <label for="facil">Fácil</label>
-                <input type="radio" id="medio" name="dificuldade" value="medio" checked>
+                <input type="radio" id="medio" name="dificuldade" value="medio" 
+                {% if receita.dificuldade == "medio" %} 
+                    checked 
+                {% elif receita == None %} 
+                    checked 
+                {% endif %}>
                 <label for="medio">Médio</label>
-                <input type="radio" id="dificil" name="dificuldade" value="dificil">
+                <input type="radio" id="dificil" name="dificuldade" value="dificil" 
+                {% if receita.dificuldade == "dificil" %} 
+                    checked 
+                {% endif %}>
                 <label for="dificil">Difícil</label>
             </div>
         </div>
@@ -62,6 +73,7 @@
             <input type="hidden" value="{{ receita.id }}" name="id" id="id">
             <input type="hidden" value="{{ receita.receita }}" name="receita" id="receita">
             <button type="submit">Editar Receita</button>
+            <button><a href="/receitasSalvas">Voltar</a></button>
         {% else %}
             <button type="submit">Gerar Receita</button>
         {% endif %}

@@ -6,9 +6,9 @@
     <title>Usuário</title>
 </head>
 <nav style="display: inline;">
-    <a href="/">Usuário</a>
-    <a href="/receita">Receitas</a>
-    <a href="/receitasSalvas">Receitas salvas</a>
+    <a href="/">Usuário</a> /
+    <a href="/receita">Receita</a> /
+    <a href="/receitasSalvas">Receitas salvas</a> /
     <a href="/deslogar">Deslogar</a>
 </nav>
 <body>
@@ -36,9 +36,13 @@
         <button type="submit">Logar</button>
     </form>
     <br>
-    {% for user in users %}
-    ID: {{ user.id }}, Nome: {{ user.nome }}, Senha: {{ user.senha }}
     <hr>
-    {% endfor %}
+    <br>
+    <h1>Usuários cadastrados:</h1>
+    <ul>
+        {% for user in users %}
+            <li>{{ user.nome }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
