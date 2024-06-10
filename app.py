@@ -35,21 +35,28 @@ class Receita(ChatGPT):
         self.receita = ""
 
     def editar(self, id):
+        erro = FabricaDeErros.criar("receitaNaoEncontrada")
         receitaAntiga = ReceitaDB.buscaPorId(id)
 
         if receitaAntiga == None:
-            return "A receita que seria alterada não existe! <a href='/receitasSalvas'>Voltar</a>"
+            return erro.criarPagina()
 
         receitaAntiga.categoria = self.categoria
         receitaAntiga.dificuldade = self.dificuldade
         receitaAntiga.observacoes = self.observacoes
         receitaAntiga.restricoes = self.restricoes
-        receitaAntiga.receita = self.receitaih
+        receitaAntiga.receita = self.receita
 
         db.session.commit()
 
+    @staticmethod
     def deletar(id):
+        erro = FabricaDeErros.criar("receitaNaoEncontrada")
         receita = ReceitaDB.buscaPorId(id)
+
+        if receita == None:
+            return erro.criarPagina()
+
         db.session.delete(receita)
         db.session.commit()
 
@@ -65,7 +72,7 @@ class Receita(ChatGPT):
             response_format = self.formato_resposta,
             messages = [
                 {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
-                {"role": "user", "content": "Gere uma receita que possua as seguintes especificacoes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários e o modo de preparaçao."}
+                {"role": "user", "content": "Gere uma receita que possua as seguintes especificacoes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários, o modo de preparaçao, categoria, restricoes e obsevacoes."}
             ]
         )
         return receita.choices[0].message.content
@@ -76,7 +83,7 @@ class Receita(ChatGPT):
             response_format = self.formato_resposta,
             messages = [
                 {"role": "system", "content": "Atue como um chefe de cozinha que gera apenas uma div html de suas receitas"},
-                {"role": "user", "content": "Com base na seguinte receita (" + self.receita + ") refaça ela caso as especificaoes estejam diferentes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários e o modo de preparaçao"}
+                {"role": "user", "content": "Com base na seguinte receita (" + self.receita + ") refaça ela caso as especificaoes estejam diferentes: Categoria: " + self.categoria + " Difuculdade: " + self.dificuldade + " Observacoes: " + self.observacoes + " Restricao a " + self.restricoes + ". De uma lista com os ingredientes necessários, o modo de preparaçao, categoria, restricoes e obsevacoes."}
             ]
         )
         return receita.choices[0].message.content
@@ -100,6 +107,7 @@ class ReceitaDB(db.Model):
         self.restricoes = restricoes
         self.receita = receita
 
+    @staticmethod
     def buscaPorId(id):
         receita = db.session.query(ReceitaDB).filter_by(id=id).first()
         return receita
@@ -129,7 +137,7 @@ class Usuario:
         self.senha = senha
 
     def cadastrar(self):
-        erro = ErroDeCadastro()
+        erro = FabricaDeErros.criar("cadastro")
 
         if self.nome.replace(" ", "") == "" or self.senha.replace(" ", "") == "":
             return erro.criarPagina()
@@ -145,7 +153,7 @@ class Usuario:
         return "Usuário criado! <a href='/'>Voltar</a>"
     
     def logar(self):
-        erro = ErroDeLogin()
+        erro = FabricaDeErros.criar("login")
 
         user = UsuarioDB.buscaPorNome(self.nome)
         if user == None:
@@ -167,6 +175,7 @@ class UsuarioDB(db.Model):
         self.nome = nome
         self.senha = senha
 
+    @staticmethod
     def buscaPorNome(nome):
         user = db.session.query(UsuarioDB).filter_by(nome=nome).first()
         return user
@@ -211,6 +220,27 @@ class ErroDeLogin(PaginaDeErros):
 
     def redirecionador(self):
         return "<a href='/'>Voltar</a>"
+    
+class ErroDeReceitaNaoEncontrada(PaginaDeErros):
+    def menssagem(self):
+        return "A receita que seria alterada não existe!"
+
+    def redirecionador(self):
+        return "<a href='/receitasSalvas'>Voltar</a>"
+
+class FabricaDeErros():
+    @staticmethod
+    def criar(tipo):
+        if tipo == "acesso":
+            return ErroDeAcesso()
+        if tipo == "cadastro":
+            return ErroDeCadastro()
+        if tipo == "login":
+            return ErroDeLogin()
+        if tipo =='receitaNaoEncontrada':
+            return ErroDeReceitaNaoEncontrada()
+        else:
+            return "Ocorreu um erro!"
 
 @app.route("/")
 def index():
@@ -220,7 +250,7 @@ def index():
 @app.route("/receita")
 def receita():
     if 'username' not in session:
-        erro = ErroDeAcesso()
+        erro = FabricaDeErros.criar("acesso")
         return erro.criarPagina()
 
     receita = None
@@ -229,13 +259,14 @@ def receita():
 @app.route("/receita/<id>")
 def editar(id):
     if 'username' not in session:
-        erro = ErroDeAcesso()
+        erro = FabricaDeErros.criar("acesso")
         return erro.criarPagina()
 
     receita = ReceitaDB.buscaPorId(id)
 
+    erro = FabricaDeErros.criar("receitaNaoEncontrada")
     if receita == None:
-        return "Essa receita não existe! <a href='/receitasSalvas'>Voltar</a>"
+        return erro.criarPagina()
 
     return render_template('receita.html', receita=receita)
 
@@ -254,7 +285,11 @@ def gerarReceita():
             categoria = request.form['categoriaOutro']
         dificuldade = request.form['dificuldade']
         observacoes = request.form['observacoes']
+        if observacoes == '':
+            observacoes = "Nenhuma"
         restricoes = request.form['restricoes']
+        if restricoes == '':
+            restricoes = "Nenhuma"
         nome = format(session['username'])
 
         builderReceita = ReceitaBuilder()
@@ -264,16 +299,18 @@ def gerarReceita():
         builderReceita.restricoes(restricoes)
         builderReceita.criador(nome)
 
+        print(categoria, observacoes, restricoes, dificuldade, nome)
+
         receita = builderReceita.build()
         try:
-            receita.gerarReceita()
+            receita.receita = receita.gerarReceita()
         except:
             return "Erro no ChatGPT"
 
         salvarNaDB.salvar(receita)
 
         return redirect(url_for('receitasSalvas'))
-    return redirect(url_for('receitas'))
+    return redirect(url_for('receita'))
 
 @app.route("/editarReceita", methods=['POST', 'GET'])
 def editarReceita():
@@ -283,7 +320,11 @@ def editarReceita():
             categoria = request.form['categoriaOutro']
         dificuldade = request.form['dificuldade']
         observacoes = request.form['observacoes']
+        if observacoes == '':
+            observacoes = "Nenhuma"
         restricoes = request.form['restricoes']
+        if restricoes == '':
+            restricoes = "Nenhuma"
         receita = request.form['receita']
         id = request.form['id']
 
@@ -294,8 +335,9 @@ def editarReceita():
         builderReceita.observacoes(observacoes)
         
         receitaNova = builderReceita.build()
-
         receitaNova.receita = receita
+
+        print(categoria, observacoes, restricoes, dificuldade)
 
         try:
             receitaNova.receita = receitaNova.editarReceita()
@@ -309,7 +351,7 @@ def editarReceita():
 @app.route('/deletarReceita/<id>')
 def delete(id):
     if 'username' not in session:
-        erro = ErroDeAcesso()
+        erro = FabricaDeErros.criar("acesso")
         return erro.criarPagina()
 
     Receita.deletar(id)
